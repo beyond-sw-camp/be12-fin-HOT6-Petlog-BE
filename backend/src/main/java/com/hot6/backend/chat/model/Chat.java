@@ -22,7 +22,7 @@ public class Chat extends BaseEntity {
 
     private Boolean cIsRead;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chat_room_parti_idx")
     private ChatRoomParticipant chatRoomParticipant;
 

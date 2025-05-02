@@ -29,14 +29,14 @@ public class ChatRoomParticipant extends BaseEntity {
     private Long idx;
     private Boolean isAdmin;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(
             name = "user_idx",
             foreignKey = @ForeignKey(name = "fk_chatroomparticipant_user", foreignKeyDefinition = "FOREIGN KEY (user_idx) REFERENCES user(idx) ON DELETE CASCADE")
     )
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(
             name = "chat_room_idx",
             foreignKey = @ForeignKey(name = "fk_chatroomparticipant_chatroom", foreignKeyDefinition = "FOREIGN KEY (chat_room_idx) REFERENCES chat_room(idx) ON DELETE CASCADE")
