@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class ChatRoomMigration {
 
@@ -19,7 +19,7 @@ public class ChatRoomMigration {
     private final MongoChatRoomRepository mongoChatRoomRepository;
 
     @Transactional(readOnly = true)
-    @PostConstruct
+//    @PostConstruct
     public void migrate() {
         List<ChatRoom> chatRooms = chatRoomRepository.findAllWithParticipantsAndHashtags();
 
