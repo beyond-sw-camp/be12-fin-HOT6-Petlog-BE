@@ -11,7 +11,12 @@ import java.util.Optional;
 
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatRoomRepositoryCustom  {
-    @Query("SELECT cr FROM ChatRoom cr LEFT JOIN FETCH cr.participants LEFT JOIN FETCH cr.hashtags")
+    @Query("""
+    SELECT cr FROM ChatRoom cr
+    LEFT JOIN FETCH cr.participants p
+    LEFT JOIN FETCH p.user
+    LEFT JOIN FETCH cr.hashtags
+""")
     List<ChatRoom> findAllWithParticipantsAndHashtags();
 
     @Query("SELECT cr FROM ChatRoom cr")
