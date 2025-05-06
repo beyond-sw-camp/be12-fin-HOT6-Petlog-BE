@@ -213,6 +213,7 @@ public class ChatDto {
         public String createdAt;
     }
 
+    @Setter
     @Getter
     @Builder
     @ToString
@@ -220,6 +221,8 @@ public class ChatDto {
     @AllArgsConstructor
     public static class ChatMessageDto {
         private Long chatroomId;
+        private Long senderIdx;      // ✅ 사용자 식별을 위해 추가
+        private String sender;       // ✅ 사용자 닉네임
         private ChatContent content;        // 본문 내용 or Base64 or URL
         private String timestamp;   // ISO String (정렬용, 표시용)
     }
