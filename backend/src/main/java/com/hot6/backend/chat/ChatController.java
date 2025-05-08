@@ -118,10 +118,12 @@ public class ChatController {
 
     @Operation(summary = "채팅 메시지 조회", description = "지정된 채팅방의 이전 메시지를 조회합니다.")
     @GetMapping("/chatroom/{chatRoomIdx}/chat")
-    public ResponseEntity<BaseResponse<List<ChatDto.ChatElement>>> getChatMessages(
+    public ResponseEntity<BaseResponse<Slice<ChatDto.ChatElement>>> getChatMessages(
             @AuthenticationPrincipal User user,
-            @PathVariable Long chatRoomIdx) {
-        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatMessages(chatRoomIdx,user.getIdx())));
+            @PathVariable Long chatRoomIdx,
+            @RequestParam(required = false) Long lastMessageId,
+            @RequestParam(defaultValue = "20") int size){
+        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatMessages(chatRoomIdx,user.getIdx(),lastMessageId,size)));
     }
 
     @Operation(summary = "채팅방 일정 조회", description = "지정된 채팅방의 일정을 조회합니다.")

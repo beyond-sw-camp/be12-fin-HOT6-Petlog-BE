@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: qwer1234
+      MARIADB_DATABASE: petlog
+    command: --max_allowed_packet=256M
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: chat
+    volumes:
+      - ./data/mongo:/data/db

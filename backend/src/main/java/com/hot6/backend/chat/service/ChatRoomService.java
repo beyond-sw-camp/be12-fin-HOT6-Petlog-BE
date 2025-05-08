@@ -7,6 +7,7 @@ import com.hot6.backend.chat.repository.ChatRoomParticipantRepository;
 import com.hot6.backend.chat.repository.ChatRoomRepository;
 import com.hot6.backend.common.BaseResponseStatus;
 import com.hot6.backend.common.exception.BaseException;
+import com.hot6.backend.mongo.MongoChatRoomService;
 import com.hot6.backend.pet.PetService;
 import com.hot6.backend.pet.SharedSchedulePetService;
 import com.hot6.backend.pet.model.Pet;
@@ -40,6 +41,7 @@ public class ChatRoomService {
     private final ScheduleService scheduleService;
     private final PetService petService;
     private final SharedSchedulePetService sharedSchedulePetService;
+    private final MongoChatRoomService mongoChatRoomService;
 
     @Transactional(readOnly = true)
     public Slice<ChatDto.ChatRoomListDto> getList(Long userIdx, Pageable pageable) {
@@ -82,9 +84,10 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatDto.ChatElement> getChatMessages(Long chatRoomIdx, Long userIdx) {
+    public Slice<ChatDto.ChatElement> getChatMessages(Long chatRoomIdx, Long userIdx, Long lastMessageId,int size) {
         ChatRoomParticipant chatRoomParticipant = chatRoomParticipantService.findChatRoomParticipantOrThrow(chatRoomIdx, userIdx);
-        return chatMessageService.findChatMessages(chatRoomParticipant);
+//        return chatMessageService.findChatMessages(chatRoomParticipant,lastMessageId,size);
+        return mongoChatRoomService.findChatMessages(chatRoomParticipant,lastMessageId,size);
     }
 
     @Transactional(readOnly = true)
