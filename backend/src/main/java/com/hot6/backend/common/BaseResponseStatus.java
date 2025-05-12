@@ -38,6 +38,7 @@ public enum BaseResponseStatus {
     CHAT_ROOM_LEAVE_FAILED(false, 2005, "채팅방 나가기에 실패했습니다."),
     MAX_PARTICIPANT_LIMIT(false,2006,"채팅방 참여 인원이 모두 찼습니다."),
     CHAT_ROOM_FIRST_JOIN_ID_NULL(false,2007,"채팅방 참여 시 메시지를 가져올 때, 메시지 메타정보가 null 입니다."),
+    LOCK_ACQUIRE_FAILED(false, 2008, "다른 요청 처리 중입니다. 잠시 후 다시 시도해주세요."),
 
     //-- 2100 : 채팅방 생성/수정 관련
     CHAT_ROOM_CREATION_FAILED(false, 2100, "채팅방 생성에 실패했습니다."),
