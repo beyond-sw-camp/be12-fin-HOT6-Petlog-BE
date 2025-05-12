@@ -3,9 +3,11 @@ package com.hot6.backend.user;
 import com.hot6.backend.common.BaseResponseStatus;
 import com.hot6.backend.common.exception.BaseException;
 import com.hot6.backend.pet.model.PetDto;
+import com.hot6.backend.redis.RefreshTokenRepository;
 import com.hot6.backend.user.model.EmailVerify;
 import com.hot6.backend.user.model.User;
 import com.hot6.backend.user.model.UserDto;
+import com.hot6.backend.utils.JwtUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,6 +31,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +44,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final EmailVerifyRepository emailVerifyRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${profile-image}")
     private String defaultProfileImageUrl;
@@ -308,6 +312,41 @@ public class UserService implements UserDetailsService {
                 () -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
 
         return "kakao".equals(checkUser.getProvider());
+    }
+
+
+    public void refreshAccessToken(User user, HttpServletResponse response) {
+        String email = user.getEmail();
+        String savedRefreshToken = refreshTokenRepository.findById(email);
+
+        if (savedRefreshToken == null) {
+            throw new RuntimeException("리프레시 토큰이 없습니다.");
+        }
+
+        if (!JwtUtil.validate(savedRefreshToken)) {
+            throw new RuntimeException("리프레시 토큰이 만료되었거나 잘못되었습니다.");
+        }
+
+        User refreshUser = JwtUtil.getUser(savedRefreshToken);
+        if (refreshUser == null || !refreshUser.getEmail().equals(email)) {
+            throw new RuntimeException("리프레시 토큰 정보가 일치하지 않습니다.");
+        }
+
+        String newAccessToken = JwtUtil.generateToken(user);
+
+        long refreshTokenExp = Duration.ofDays(7).toMillis();
+        String newRefreshToken = JwtUtil.generateRefreshToken(user, refreshTokenExp);
+
+        refreshTokenRepository.save(email, newRefreshToken, refreshTokenExp);
+
+        ResponseCookie accessCookie = ResponseCookie.from("ATOKEN", newAccessToken)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .maxAge(Duration.ofHours(1))
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
     }
 
 }

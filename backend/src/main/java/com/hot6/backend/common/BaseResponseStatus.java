@@ -19,6 +19,7 @@ public enum BaseResponseStatus {
     LOGIN_FAILED(false, 1100, "로그인에 실패했습니다."),
     INVALID_CREDENTIALS(false, 1101, "아이디 또는 비밀번호가 올바르지 않습니다."),
     EMAIL_VERIFY_FAIL(false, 1102, "이메일 인증이 완료되지 않았습니다."),
+    INVALID_JWT(false, 1103, "유효하지 않은 JWT 토큰입니다."),
     //-- 1200 : 계정 정보 수정
     ACCOUNT_UPDATE_FAILED(false, 1200, "계정 정보 수정에 실패했습니다."),
     INVALID_USER_INFO(false, 1201, "잘못된 사용자 정보입니다."),

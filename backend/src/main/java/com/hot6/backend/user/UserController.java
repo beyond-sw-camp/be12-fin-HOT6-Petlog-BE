@@ -148,5 +148,19 @@ public class UserController {
             return ResponseEntity.badRequest().body("닉네임 수정 실패: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "Access Token 재발급", description = "Refresh Token으로 Access Token을 재발급합니다.")
+    @PostMapping("/token/refresh")
+    public ResponseEntity<BaseResponse<String>> refreshAccessToken(@AuthenticationPrincipal User user,
+                                                                   HttpServletResponse response) {
+        try {
+            userService.refreshAccessToken(user, response);
+            return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, "Access Token 재발급 완료"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new BaseResponse<>(BaseResponseStatus.INVALID_JWT, e.getMessage()));
+        }
+    }
+
 }
 

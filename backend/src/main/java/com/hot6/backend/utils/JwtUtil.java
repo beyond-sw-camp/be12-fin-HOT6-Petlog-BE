@@ -68,6 +68,22 @@ public class JwtUtil {
         return token;
     }
 
+    public static String generateRefreshToken(User user, long refreshTokenExp) {
+        Claims claims = Jwts.claims();
+        claims.put("idx", user.getIdx());
+        claims.put("email", user.getEmail());
+        claims.put("enabled", user.isEnabled());
+        claims.put("userType", user.getUserType());
+        claims.put("nickname", user.getNickname());
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExp))
+                .signWith(SignatureAlgorithm.HS256, SECRET)
+                .compact();
+    }
+
+
     public static boolean validate(String token) {
         try {
             Jwts.parserBuilder()
