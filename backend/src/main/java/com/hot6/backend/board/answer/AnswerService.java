@@ -138,7 +138,7 @@ public class AnswerService {
 
     @Transactional(readOnly = true)
     public int countByQuestionIdx(Long questionId) {
-        return answerRepository.countByQuestionIdx(questionId);
+        return answerRepository.countByQuestion_IdxAndUser_UserTypeNot(questionId, UserType.AI);
     }
     @Transactional(readOnly = true)
     public List<AnswerDto.AnswerResponse> readByAnswer(Long userId) {

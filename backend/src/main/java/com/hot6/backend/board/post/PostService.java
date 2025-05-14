@@ -5,6 +5,7 @@ import com.hot6.backend.board.post.images.PostImageService;
 import com.hot6.backend.board.post.model.BoardType;
 import com.hot6.backend.board.post.model.Post;
 import com.hot6.backend.board.post.model.PostDto;
+import com.hot6.backend.board.post.model.PostListResponse;
 import com.hot6.backend.category.model.Category;
 import com.hot6.backend.category.model.CategoryRepository;
 import com.hot6.backend.common.BaseResponseStatus;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -66,13 +66,26 @@ public class PostService {
         }
     }
 
-    public Page<PostDto.PostResponse> list(String boardName, int page, int size) {
+    public PostListResponse list(String boardName, int page, int size) {
         BoardType boardType = boardTypeRepository.findByBoardName(boardName)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.POST_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return postRepository.findByBoardType(boardType, pageable)
-                .map(PostDto.PostResponse::from);
+        Page<Post> result = postRepository.findByBoardType(boardType, pageable);
+        List<PostDto.PostResponse> posts = result.map(PostDto.PostResponse::from).toList();
+
+        int totalPages = result.getTotalPages();
+        int currentPage = result.getNumber() + 1; // 1-based 페이지 번호
+        int pageGroupSize = 10;
+        int pageGroupStart = ((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
+        int pageGroupEnd = Math.min(pageGroupStart + pageGroupSize - 1, totalPages);
+
+        List<Integer> visiblePages = new java.util.ArrayList<>();
+        for (int i = pageGroupStart; i <= pageGroupEnd; i++) {
+            visiblePages.add(i);
+        }
+
+        return new PostListResponse(posts, currentPage, totalPages, pageGroupStart, pageGroupEnd, visiblePages);
     }
 
     public PostDto.PostResponse read(Long idx) {
@@ -81,37 +94,41 @@ public class PostService {
         return PostDto.PostResponse.from(post);
     }
 
-    public Page<PostDto.PostResponse> search(String boardName, String categoryName, String keyword, int page, int size) {
+    public PostListResponse search(String boardName, String categoryName, String keyword, int page, int size) {
         BoardType boardType = boardTypeRepository.findByBoardName(boardName)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.POST_NOT_FOUND));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Post> result;
 
-        try {
-            if (keyword != null && !keyword.isBlank()) {
-                if (categoryName == null || categoryName.isBlank()) {
-                    // 카테고리 없이 제목+작성자 통합 검색
-                    return postRepository.findByBoardTypeAndTitleContainingIgnoreCaseOrBoardTypeAndUser_NicknameContainingIgnoreCase(
-                            boardType, keyword, boardType, keyword, pageable
-                    ).map(PostDto.PostResponse::from);
-                } else {
-                    // 카테고리 내 제목+작성자 통합 검색
-                    return postRepository.findByBoardTypeAndCategoryNameAndTitleContainingIgnoreCaseOrBoardTypeAndCategoryNameAndUser_NicknameContainingIgnoreCase(
-                            boardType, categoryName, keyword, boardType, categoryName, keyword, pageable
-                    ).map(PostDto.PostResponse::from);
-                }
-            }
-
+        if (keyword != null && !keyword.isBlank()) {
             if (categoryName == null || categoryName.isBlank()) {
-                return postRepository.findByBoardType(boardType, pageable)
-                        .map(PostDto.PostResponse::from);
+                result = postRepository.searchByKeywordOnly(boardType, keyword, pageable);
             } else {
-                return postRepository.findByBoardTypeAndCategoryName(boardType, categoryName, pageable)
-                        .map(PostDto.PostResponse::from);
+                result = postRepository.searchByCategoryAndKeyword(boardType, categoryName, keyword, pageable);
             }
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.POST_SEARCH_FAILED);
+        } else {
+            if (categoryName == null || categoryName.isBlank()) {
+                result = postRepository.findByBoardType(boardType, pageable);
+            } else {
+                result = postRepository.findByBoardTypeAndCategoryName(boardType, categoryName, pageable);
+            }
         }
+
+        List<PostDto.PostResponse> posts = result.map(PostDto.PostResponse::from).toList();
+
+        int totalPages = result.getTotalPages();
+        int currentPage = result.getNumber() + 1;
+        int pageGroupSize = 10;
+        int pageGroupStart = ((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
+        int pageGroupEnd = Math.min(pageGroupStart + pageGroupSize - 1, totalPages);
+
+        List<Integer> visiblePages = new java.util.ArrayList<>();
+        for (int i = pageGroupStart; i <= pageGroupEnd; i++) {
+            visiblePages.add(i);
+        }
+
+        return new PostListResponse(posts, currentPage, totalPages, pageGroupStart, pageGroupEnd, visiblePages);
     }
 
 

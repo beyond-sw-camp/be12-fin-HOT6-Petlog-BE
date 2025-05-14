@@ -14,6 +14,7 @@ import com.hot6.backend.schedule.ScheduleService;
 import com.hot6.backend.schedule.model.Schedule;
 import com.hot6.backend.user.UserService;
 import com.hot6.backend.user.model.User;
+import com.hot6.backend.user.model.UserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -49,22 +50,42 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = false)
-    public void createChatRoom(ChatDto.CreateChatRoomRequest request, Long userIdx) {
+    public void createChatRoom(ChatDto.CreateChatRoomRequest request, Long userIdx, LocalDateTime startDateTime) {
+        User findUser = userService.findUserByIdx(userIdx);
+
+        // 사용자의 유형에 따라 채팅방 타입 설정
+        ChatRoomType chatRoomType = findUser.getUserType() == UserType.ADMIN ? ChatRoomType.ADMIN : ChatRoomType.USER;
+
+        LocalDateTime effectiveStartDateTime = (startDateTime != null) ? startDateTime : LocalDateTime.now();
+
+        // 이벤트 채팅방이면, 요청한 인원수로 설정하고 아니면 기본값 100명으로 설정
+        int maxParticipants = (request.getMaxParticipants() != null) ? request.getMaxParticipants() : 100;
+
+        // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .cTitle(request.getTitle())
-                .maxParticipants(10)
+                .maxParticipants(maxParticipants)  // maxParticipants 설정
+                .type(chatRoomType)
+                .startDateTime(effectiveStartDateTime)  // startDateTime 설정
                 .build();
+
+        // 채팅방 저장
         chatRoomRepository.save(chatRoom);
+
+        // 해시태그 처리
         List<ChatRoomHashtag> hashtags = new ArrayList<>();
-        for(String hashtag : request.getHashtags()) {
+        for (String hashtag : request.getHashtags()) {
             ChatRoomHashtag chatRoomHashtag = ChatRoomHashtag.builder()
                     .chatRoom(chatRoom)
                     .cTag(hashtag)
                     .build();
             hashtags.add(chatRoomHashtag);
         }
+
+        // 해시태그 저장
         chatRoomHashtagService.saveAll(hashtags);
-        User findUser = userService.findUserByIdx(userIdx);
+
+        // 채팅방 참가자 저장
         chatRoomParticipantService.save(findUser, chatRoom);
     }
 
@@ -82,9 +103,9 @@ public class ChatRoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatDto.ChatElement> getChatMessages(Long chatRoomIdx, Long userIdx) {
+    public Slice<ChatDto.ChatElement> getChatMessages(Long chatRoomIdx, Long userIdx, Long lastMessageId,int size) {
         ChatRoomParticipant chatRoomParticipant = chatRoomParticipantService.findChatRoomParticipantOrThrow(chatRoomIdx, userIdx);
-        return chatMessageService.findChatMessages(chatRoomParticipant);
+        return chatMessageService.findChatMessages(chatRoomParticipant,lastMessageId,size);
     }
 
     @Transactional(readOnly = true)
@@ -171,12 +192,27 @@ public class ChatRoomService {
 
     @Transactional(readOnly = false)
     public void join(User user, Long roomIdx) {
-        ChatRoom chatRoom = chatRoomRepository.findByIdx(roomIdx).orElseThrow(() -> new BaseException(BaseResponseStatus.CHAT_ROOM_NOT_FOUND));
-        int curParticipants = chatRoomParticipantService.countByChatRoom(chatRoom);
-        if(chatRoom.getMaxParticipants() == curParticipants) {
+        ChatRoom chatRoom = chatRoomRepository.findByIdxForUpdate(roomIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.CHAT_ROOM_NOT_FOUND));
+
+        if (chatRoom.getCurrentParticipants() >= chatRoom.getMaxParticipants()) {
             throw new BaseException(BaseResponseStatus.MAX_PARTICIPANT_LIMIT);
         }
+
+        chatRoom.incrementCurrentParticipants();
         chatRoomParticipantService.join(user, chatRoom);
+    }
+
+    @Transactional(readOnly = false)
+    public void leaveChatRoom(Long chatRoomIdx, Long idx) {
+        ChatRoom chatRoom = chatRoomRepository.findByIdxForUpdate(chatRoomIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.CHAT_ROOM_NOT_FOUND));
+
+        ChatRoomParticipant chatRoomParticipant = chatRoomParticipantService.findByUserIdAndChatRoomIdSimple(idx, chatRoomIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.CHAT_ROOM_ACCESS_DENIED));
+
+        chatRoom.decrementCurrentParticipants();
+        chatRoomParticipantService.delete(chatRoomParticipant);
     }
 
     @Transactional(readOnly = true)
@@ -240,5 +276,15 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
 
         chatRoomHashtagService.saveAll(toAdd);
+    }
+    @Transactional(readOnly = false)
+    public List<ChatDto.ChatRoomListDto> getAdminChatRooms(Long userIdx) {
+        // ADMIN 타입 채팅방만 찾기
+        List<ChatRoom> adminChatRooms = chatRoomRepository.findByType(ChatRoomType.ADMIN);
+
+        // ADMIN 타입 채팅방만 반환, userIdx를 전달
+        return adminChatRooms.stream()
+                .map(room -> ChatDto.ChatRoomListDto.from(room, userIdx))  // userIdx를 함께 전달
+                .collect(Collectors.toList());
     }
 }

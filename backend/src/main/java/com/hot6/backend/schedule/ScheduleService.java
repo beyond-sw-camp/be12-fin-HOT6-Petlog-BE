@@ -43,8 +43,53 @@ public class ScheduleService {
         Pet pet = petRepository.findById(petIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.PET_NOT_FOUND));
 
-        Schedule schedule = dto.toEntity(category, pet);
-        scheduleRepository.save(schedule);
+        if (!dto.isRecurring()) {
+            Schedule schedule = dto.toEntity(category, pet);
+            scheduleRepository.save(schedule);
+            return;
+        }
+
+        LocalDateTime startAt = dto.getStartAt();
+        LocalDateTime endAt = dto.getEndAt();
+        LocalDate repeatEndAt = dto.getRepeatEndAt();
+        int repeatCount = dto.getRepeatCount();
+        String repeatCycle = dto.getRepeatCycle();
+
+        while (!startAt.toLocalDate().isAfter(repeatEndAt)) {
+            Schedule newSchedule = Schedule.builder()
+                    .sTitle(dto.getTitle())
+                    .sMemo(dto.getMemo())
+                    .categoryIdx(category.getIdx())
+                    .startAt(startAt)
+                    .endAt(endAt)
+                    .recurring(true)
+                    .repeatCycle(repeatCycle)
+                    .repeatCount(repeatCount)
+                    .repeatEndAt(repeatEndAt)
+                    .placeName(dto.getPlaceName())
+                    .placeId(dto.getPlaceId())
+                    .pet(pet)
+                    .build();
+
+            scheduleRepository.save(newSchedule);
+
+            switch (repeatCycle) {
+                case "일":
+                    startAt = startAt.plusDays(repeatCount);
+                    endAt = endAt.plusDays(repeatCount);
+                    break;
+                case "주":
+                    startAt = startAt.plusWeeks(repeatCount);
+                    endAt = endAt.plusWeeks(repeatCount);
+                    break;
+                case "월":
+                    startAt = startAt.plusMonths(repeatCount);
+                    endAt = endAt.plusMonths(repeatCount);
+                    break;
+                default:
+                    throw new BaseException(BaseResponseStatus.SCHEDULE_INVALID_REPEAT_CYCLE);
+            }
+        }
     }
 
     public List<ScheduleDto.SimpleSchedule> getAllSchedule(Long userIdx) {

@@ -2,6 +2,8 @@ package com.hot6.backend.chat.repository;
 
 import com.hot6.backend.chat.model.Chat;
 import com.hot6.backend.chat.model.ChatRoom;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +18,17 @@ public interface ChatMessageRepository extends JpaRepository<Chat,Long> {
             "ORDER BY c.createdAt ASC")
     List<Chat> findByChatRoomIdAndIdxGreaterThanEqualOrderByTimestampAsc(Long roomId, Long startMessageId);
 
-
+    @Query("SELECT c FROM Chat c " +
+            "WHERE c.chatRoomParticipant.chatRoom.idx = :roomId " +
+            "AND c.idx >= :startMessageId " +
+            "AND (:lastMessageId IS NULL OR c.idx < :lastMessageId) " +
+            "ORDER BY c.idx DESC")
+    Slice<Chat> findSliceForScroll(
+            Long roomId,
+            Long startMessageId,
+            Long lastMessageId,
+            Pageable pageable
+    );
     @Query(value = """
     SELECT c.* 
     FROM chat c

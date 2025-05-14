@@ -29,7 +29,9 @@ public class Schedule extends BaseEntity {
     private String sMemo;
     private boolean recurring;
     private String repeatCycle;
+    private String placeName;
     private String placeId;
+
     private boolean isDeleted;
     private int repeatCount;
     private LocalDate repeatEndAt;

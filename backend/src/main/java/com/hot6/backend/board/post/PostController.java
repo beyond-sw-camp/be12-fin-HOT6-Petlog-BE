@@ -1,15 +1,14 @@
 package com.hot6.backend.board.post;
 
 import com.hot6.backend.board.post.model.PostDto;
+import com.hot6.backend.board.post.model.PostListResponse;
 import com.hot6.backend.common.BaseResponse;
 import com.hot6.backend.common.BaseResponseStatus;
 import com.hot6.backend.user.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,11 +32,13 @@ public class PostController {
     }
 
     @GetMapping("/list/{boardName}")
-    public ResponseEntity<BaseResponse<Page<PostDto.PostResponse>>> list(
+    public ResponseEntity<BaseResponse<PostListResponse>> list(
             @PathVariable String boardName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, postService.list(boardName, page, size)));
+
+        PostListResponse response = postService.list(boardName, page, size);
+        return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, response));
     }
 
     @GetMapping("/read/{postIdx}")
@@ -46,15 +47,25 @@ public class PostController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<BaseResponse<Page<PostDto.PostResponse>>> search(
+    public ResponseEntity<BaseResponse<PostListResponse>> search(
             @RequestParam String boardName,
             @RequestParam String category,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS,
-                postService.search(boardName, category, keyword, page, size)));
+        try {
+            System.out.println("[검색 요청] board=" + boardName + ", category=" + category + ", keyword=" + keyword + ", page=" + page);
+
+            PostListResponse response = postService.search(boardName, category, keyword, page, size);
+            return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, response));
+        } catch (Exception e) {
+            System.out.println("게시글 검색 중 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new BaseResponse<>(BaseResponseStatus.POST_SEARCH_FAILED));
+        }
     }
+
+
 
     @DeleteMapping("/delete/{idx}")
     public ResponseEntity<BaseResponse<Void>> delete(@PathVariable Long idx) {

@@ -21,6 +21,8 @@ public class Question extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idx;
     private String qTitle;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
     private boolean selected;
 

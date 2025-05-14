@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -185,5 +186,27 @@ public class UserDto {
     @Setter
     public static class NicknameUpdateRequest {
         private String newNickname;
+    }
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    public static class DeletedUserResponse {
+        private Long idx;
+        private String email;
+        private String nickname;
+        private String userProfileImage;
+        private String userType;
+        private Boolean isDeleted;
+
+        public static DeletedUserResponse from(User user) {
+            return DeletedUserResponse.builder()
+                    .idx(user.getIdx())
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .userProfileImage(user.getUserProfileImage())
+                    .userType(user.getUserType().name())
+                    .isDeleted(user.getIsDeleted())
+                    .build();
+        }
     }
 }

@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-
+    int countByReceiver_IdxAndIsReadFalse(Long userId);
     List<Notification> findAllBySchedulePetOrderBySentAtDesc(Pet pet);
     @Modifying
     @Query("DELETE FROM Notification n WHERE n.idx = :idx")

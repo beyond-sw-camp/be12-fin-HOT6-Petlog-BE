@@ -1,6 +1,7 @@
 package com.hot6.backend.board.question;
 
 import com.hot6.backend.board.question.model.QuestionDto;
+import com.hot6.backend.board.question.model.QuestionListResponse;
 import com.hot6.backend.common.BaseResponse;
 import com.hot6.backend.common.BaseResponseStatus;
 import lombok.RequiredArgsConstructor;
@@ -39,23 +40,20 @@ public class QuestionController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<BaseResponse<Page<QuestionDto.QuestionResponse>>> list(
+    public BaseResponse<QuestionListResponse> list(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        Page<QuestionDto.QuestionResponse> responses = questionService.list(page, size);
-        return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, responses));
+            @RequestParam(defaultValue = "5") int size) {
+        return new BaseResponse<>(questionService.list(page, size));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<BaseResponse<Page<QuestionDto.QuestionResponse>>> search(
+    public BaseResponse<QuestionListResponse> search(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        Page<QuestionDto.QuestionResponse> responses = questionService.search(keyword, page, size);
-        return ResponseEntity.ok(new BaseResponse<>(BaseResponseStatus.SUCCESS, responses));
+            @RequestParam(defaultValue = "5") int size) {
+        return new BaseResponse<>(questionService.search(keyword, page, size));
     }
+
 
     @GetMapping("/read/{idx}")
     public ResponseEntity<BaseResponse<QuestionDto.QuestionResponse>> read(@PathVariable Long idx) {

@@ -24,8 +24,7 @@ public class ChatKafkaConsumer {
                        @Header("kafka_receivedMessageKey") String chatRoomId) {
 
         log.info("📥 [Kafka 메시지 수신] roomId={}, message={}", chatRoomId, message.getContent());
-        chatRoomService.saveSendMessage(message.getChatroomId(), message.getSenderIdx(), message);
         // WebSocket 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/chat/" + chatRoomId, message);
+        messagingTemplate.convertAndSend("/topic/chat/" + chatRoomId, chatRoomService.saveSendMessage(message.getChatroomId(), message.getSenderIdx(), message));
     }
 }

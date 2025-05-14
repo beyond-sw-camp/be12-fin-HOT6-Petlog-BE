@@ -68,13 +68,10 @@ public class SecurityConfig {
 
 
                 .requestMatchers("/schedule").hasAuthority("USER")
-                .requestMatchers("/schedule").hasAuthority("USER")
                 .requestMatchers("/admin").hasAuthority("ADMIN")
                 .requestMatchers("/category/register").hasAuthority("ADMIN")
                 .requestMatchers("/category/{categoryIdx:[0-9]+}").hasAuthority("ADMIN")
 
-
-                // 기타 모든 요청 허용
                 .anyRequest().authenticated()
         );
 
