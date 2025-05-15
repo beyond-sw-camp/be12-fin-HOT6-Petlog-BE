@@ -17,6 +17,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -33,7 +35,12 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<String> createGroupChat(@RequestBody ChatDto.CreateChatRoomRequest request, @AuthenticationPrincipal User user) {
         log.info("user info {}", user.getIdx());
-        chatRoomService.createChatRoom(request, user.getIdx());
+        // startDateTime을 LocalDateTime으로 파싱
+        LocalDateTime startDateTime = null;
+        if (request.getStartDateTime() != null) {
+            startDateTime = LocalDateTime.parse(request.getStartDateTime());
+        }
+        chatRoomService.createChatRoom(request, user.getIdx(), startDateTime);
         return ResponseEntity.ok("채팅방 생성 완료");
     }
 
@@ -59,7 +66,7 @@ public class ChatController {
     public ResponseEntity<BaseResponse<String>> leaveChatRoom(
             @PathVariable Long chatRoomIdx,
             @AuthenticationPrincipal User user) {
-        chatRoomParticipantService.leaveChatRoom(chatRoomIdx,user.getIdx());
+        chatRoomService.leaveChatRoom(chatRoomIdx,user.getIdx());
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,"성공적으로 나가졌습니다."));
     }
 

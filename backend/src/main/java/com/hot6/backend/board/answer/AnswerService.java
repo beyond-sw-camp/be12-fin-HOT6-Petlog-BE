@@ -55,10 +55,11 @@ public class AnswerService {
     }
     @Transactional(readOnly = true)
     public List<AnswerDto.AnswerResponse> listByQuestion(Long questionIdx) {
-        return answerRepository.findByQuestion_IdxOrderByCreatedAtDesc(questionIdx).stream()
+        return answerRepository.findByQuestionIdxWithAssociations(questionIdx).stream()
                 .map(AnswerDto.AnswerResponse::from)
                 .toList();
     }
+
     @Transactional(readOnly = false)
     public void select(Long idx) {
         Answer answer = answerRepository.findById(idx)

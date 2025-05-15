@@ -44,8 +44,8 @@ public class CommentService {
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.POST_NOT_FOUND));
 
         try {
-            return commentRepository.findByPostOrderByCreatedAtDesc(post).stream()
-                    .map(CommentDto.CommentResponse::from)
+            return commentRepository.findByPostWithAssociations(post).stream()
+                            .map(CommentDto.CommentResponse::from)
                     .toList();
         } catch (Exception e) {
             throw new BaseException(BaseResponseStatus.COMMENT_NOT_FOUND);

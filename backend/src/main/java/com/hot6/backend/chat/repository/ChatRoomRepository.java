@@ -1,10 +1,14 @@
 package com.hot6.backend.chat.repository;
 
 import com.hot6.backend.chat.model.ChatRoom;
+import com.hot6.backend.chat.model.ChatRoomType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,4 +51,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatR
     Slice<ChatRoom> findChatRoomsWithDetailsByIds(List<Long> roomIds, Pageable pageable);
     List<ChatRoom> findByTagsWithParticipants(List<String> tagList);
     List<ChatRoom> findByTitleWithParticipantsAndTags(String keyword);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from ChatRoom c where c.idx = :idx")
+    Optional<ChatRoom> findByIdxForUpdate(Long idx);
+    List<ChatRoom> findByType(ChatRoomType type);
 }

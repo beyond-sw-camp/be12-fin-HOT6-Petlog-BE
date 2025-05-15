@@ -1,6 +1,7 @@
 package com.hot6.backend.notification.model;
 
 import com.hot6.backend.schedule.model.Schedule;
+import com.hot6.backend.user.model.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +34,12 @@ public class NotificationDto {
         @Schema(description = "스케줄 ID", example = "101")
         private Long scheduleId;
 
+        @Schema(description = "알림 읽음", example = "1")
+        private boolean isRead;
+
+        @Schema(description = "받는이", example = "1")
+        private User receiver;
+
         // ✅ 엔티티 → DTO 변환 (정적 팩토리 메서드)
         public static NotificationElement from(Notification notification) {
             return NotificationElement.builder()
@@ -41,19 +48,20 @@ public class NotificationDto {
                     .sentAt(notification.getSentAt())
                     .petName(notification.getSchedule().getPet().getName())
                     .scheduleId(notification.getSchedule().getIdx())
+                    .isRead(notification.isRead())
+                    .receiver(notification.getReceiver())
                     .build();
         }
 
-        // DTO → 엔티티 (Schedule을 주입받아야 함)
-        public Notification toEntity(Schedule schedule) {
+        public Notification toEntity(Schedule schedule, User receiver) {
             Notification notification = new Notification();
             notification.setMessage(this.message);
             notification.setSentAt(this.sentAt != null ? this.sentAt : LocalDateTime.now());
             notification.setSchedule(schedule);
+            notification.setReceiver(receiver); // ✅ 수신자 설정
             return notification;
         }
     }
-
     /**
      * ✅ 알림 생성 요청용 DTO (스케줄러 → 서비스 전달용)
      */

@@ -76,18 +76,18 @@ public class QuestionService {
     }
 
     public QuestionListResponse list(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Question> result = questionRepository.findAll(pageable);
+        Pageable pageable = PageRequest.of(page, size);
+        List<Question> questions = questionRepository.findAllWithHashtags(pageable);
+        long totalCount = questionRepository.countAll();
 
-        List<QuestionDto.QuestionResponse> content = result.getContent().stream()
+        List<QuestionDto.QuestionResponse> content = questions.stream()
                 .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())))
                 .toList();
 
-        int currentPage = result.getNumber() + 1;
-        int totalPages = result.getTotalPages();
-        int pageGroupSize = 10;
-        int pageGroupStart = ((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
-        int pageGroupEnd = Math.min(pageGroupStart + pageGroupSize - 1, totalPages);
+        int currentPage = page + 1;
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        int pageGroupStart = ((currentPage - 1) / 10) * 10 + 1;
+        int pageGroupEnd = Math.min(pageGroupStart + 9, totalPages);
 
         List<Integer> visiblePages = new ArrayList<>();
         for (int i = pageGroupStart; i <= pageGroupEnd; i++) {
@@ -105,15 +105,16 @@ public class QuestionService {
     }
 
     public QuestionListResponse search(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<Question> result = questionRepository.searchByKeyword(keyword, pageable);
+        Pageable pageable = PageRequest.of(page, size);
+        List<Question> questions = questionRepository.searchWithHashtags(keyword, pageable);
+        long totalCount = questionRepository.countByKeyword(keyword);
 
-        List<QuestionDto.QuestionResponse> content = result.getContent().stream()
+        List<QuestionDto.QuestionResponse> content = questions.stream()
                 .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())))
                 .toList();
 
-        int currentPage = result.getNumber() + 1;
-        int totalPages = result.getTotalPages();
+        int currentPage = page + 1;
+        int totalPages = (int) Math.ceil((double) totalCount / size);
         int pageGroupSize = 10;
         int pageGroupStart = ((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
         int pageGroupEnd = Math.min(pageGroupStart + pageGroupSize - 1, totalPages);
@@ -133,11 +134,14 @@ public class QuestionService {
                 .build();
     }
 
-
     public QuestionDto.QuestionResponse read(Long idx) {
-        Question question = questionRepository.findById(idx)
+        Question question = questionRepository.findWithAssociationsById(idx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.QUESTION_NOT_FOUND));
-        return QuestionDto.QuestionResponse.from(question, answerService.countByQuestionIdx(question.getIdx()));
+
+        return QuestionDto.QuestionResponse.from(
+                question,
+                answerService.countByQuestionIdx(question.getIdx())
+        );
     }
 
     @Transactional(readOnly = false)
@@ -205,6 +209,5 @@ public class QuestionService {
                 .map(q -> QuestionDto.UserQuestionResponse.from(q, answerRepository.countByQuestion(q)))
                 .toList();
     }
-
 }
 
