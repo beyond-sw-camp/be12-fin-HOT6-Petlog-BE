@@ -5,6 +5,7 @@ import com.hot6.backend.chat.service.ChatRoomParticipantService;
 import com.hot6.backend.chat.service.ChatRoomService;
 import com.hot6.backend.common.BaseResponse;
 import com.hot6.backend.common.BaseResponseStatus;
+import com.hot6.backend.mongo.MongoChatRoomService;
 import com.hot6.backend.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,7 @@ import java.util.List;
 @Tag(name = "Chat", description = "그룹 채팅 기능 API")
 public class ChatController {
     private final ChatRoomService chatRoomService;
+    private final MongoChatRoomService mongoChatRoomService;
     private final ChatRoomParticipantService chatRoomParticipantService;
 
     @Operation(summary = "그룹 채팅방 생성", description = "채팅방 제목과 해시태그를 포함하여 새로운 채팅방을 생성합니다.")
@@ -75,7 +77,8 @@ public class ChatController {
             @PageableDefault(size = 100) Pageable pageable
     ) {
         Long userIdx = (user != null) ? user.getIdx() : null;
-        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.getList(userIdx,pageable)));
+//        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.getList(userIdx,pageable)));
+        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, mongoChatRoomService.getList(userIdx,pageable)));
     }
 
     @Operation(summary = "참여 중인 채팅방 목록 조회", description = "사용자가 현재 참여 중인 채팅방 목록을 조회합니다.")
@@ -84,7 +87,8 @@ public class ChatController {
             @AuthenticationPrincipal User user,
             @PageableDefault(size = 100) Pageable pageable) {
 //        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.getChatRoomByUserIdx(user.getIdx())));
-        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.findMyChatRooms(user.getIdx(),pageable)));
+//        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.findMyChatRooms(user.getIdx(),pageable)));
+        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, mongoChatRoomService.findMyChatRooms(user.getIdx(),pageable)));
     }
 
     @Operation(summary = "채팅방 검색", description = "채팅방 제목 또는 해시태그로 검색합니다.")
@@ -94,7 +98,8 @@ public class ChatController {
             @RequestParam(required = false) String query,
             @RequestParam(required = false) List<String> hashtags) {
         Long userIdx = (user != null) ? user.getIdx() : null;
-        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.searchChatRoom(userIdx,query,hashtags)));
+//        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, chatRoomService.searchChatRoom(userIdx,query,hashtags)));
+        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, mongoChatRoomService.searchChatRoom(userIdx,query,hashtags)));
     }
 
     @Operation(summary = "단일 채팅방의 정보 조회", description = "단일 채팅방의 정보를 조회합니다.(채팅방 이름, 해시 태그)")
@@ -103,7 +108,8 @@ public class ChatController {
             @AuthenticationPrincipal User user,
             @PathVariable Long chatRoomIdx
     ) {
-        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatRoomInfo(chatRoomIdx,user.getIdx())));
+//        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatRoomInfo(chatRoomIdx,user.getIdx())));
+        return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,mongoChatRoomService.getChatRoomInfo(chatRoomIdx,user.getIdx())));
     }
 
     @Operation(summary = "채팅방 정보 조회 - 현재 참여한 유저", description = "현재 채팅방에 참여하고 있는 유저의 목록을 조회합니다.")

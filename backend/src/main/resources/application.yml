@@ -1,3 +1,4 @@
+
 management:
   endpoints:
     web:
@@ -26,6 +27,9 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     username: ${DB_ID}
     password: ${DB_PASSWORD}
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_DB_HOST}:${MONGO_DB_PORT}/${MONGO_DB}
 
   jpa:
     defer-datasource-initialization: true
