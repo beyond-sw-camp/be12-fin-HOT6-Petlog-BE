@@ -97,6 +97,7 @@ public class NotificationService {
         }
         notificationRepository.deleteById(idx);
     }
+    @Transactional(readOnly = false)
     public int countUnreadByReceiverId(Long userId) {
         return notificationRepository.countByReceiver_IdxAndIsReadFalse(userId);
     }
