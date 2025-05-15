@@ -1,6 +1,7 @@
-package com.hot6.backend.mongo;
+package com.hot6.backend.mongo.message.model;
 
 import com.hot6.backend.chat.model.ChatMessageType;
+import com.hot6.backend.common.BaseEntity;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.persistence.Id;
@@ -27,6 +28,5 @@ public class MongoChatMessageDocument {
     private String message;
     private boolean isRead;
     private ChatMessageType type;
-
     private LocalDateTime createdAt;
 }

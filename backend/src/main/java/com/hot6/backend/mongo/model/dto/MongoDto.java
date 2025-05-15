@@ -1,8 +1,8 @@
-package com.hot6.backend.mongo.dto;
+package com.hot6.backend.mongo.model.dto;
 
 import com.hot6.backend.chat.model.ChatDto;
-import com.hot6.backend.mongo.MongoChatMessageDocument;
-import com.hot6.backend.mongo.MongoChatRoomDocument;
+import com.hot6.backend.mongo.message.model.MongoChatMessageDocument;
+import com.hot6.backend.mongo.room.MongoChatRoomDocument;
 
 public class MongoDto {
 

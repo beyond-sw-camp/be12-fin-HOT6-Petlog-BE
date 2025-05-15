@@ -5,7 +5,7 @@ import com.hot6.backend.chat.service.ChatRoomParticipantService;
 import com.hot6.backend.chat.service.ChatRoomService;
 import com.hot6.backend.common.BaseResponse;
 import com.hot6.backend.common.BaseResponseStatus;
-import com.hot6.backend.mongo.MongoChatRoomService;
+import com.hot6.backend.mongo.room.MongoChatRoomService;
 import com.hot6.backend.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +33,8 @@ public class ChatController {
     @PostMapping
     public ResponseEntity<String> createGroupChat(@RequestBody ChatDto.CreateChatRoomRequest request, @AuthenticationPrincipal User user) {
         log.info("user info {}", user.getIdx());
-        chatRoomService.createChatRoom(request, user.getIdx());
+//        chatRoomService.createChatRoom(request, user.getIdx());
+        mongoChatRoomService.createChatRoom(request, user.getIdx());
         return ResponseEntity.ok("채팅방 생성 완료");
     }
 
@@ -43,7 +44,8 @@ public class ChatController {
             @AuthenticationPrincipal User user,
             @PathVariable Long chatRoomIdx,
             @RequestBody ChatDto.UpdateChatRequest request) {
-        chatRoomService.updateChatRoomInfo(user, chatRoomIdx, request);
+//        chatRoomService.updateChatRoomInfo(user, chatRoomIdx, request);
+        mongoChatRoomService.updateChatRoomInfo(user, chatRoomIdx, request);
         return ResponseEntity.ok("채팅방 수정 완료");
     }
 
@@ -59,7 +61,8 @@ public class ChatController {
     public ResponseEntity<BaseResponse<String>> leaveChatRoom(
             @PathVariable Long chatRoomIdx,
             @AuthenticationPrincipal User user) {
-        chatRoomParticipantService.leaveChatRoom(chatRoomIdx,user.getIdx());
+//        chatRoomParticipantService.leaveChatRoom(chatRoomIdx,user.getIdx());
+        mongoChatRoomService.leaveChatRoom(chatRoomIdx,user.getIdx());
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,"성공적으로 나가졌습니다."));
     }
 
@@ -123,6 +126,7 @@ public class ChatController {
             @PathVariable Long chatRoomIdx,
             @RequestParam(required = false) Long lastMessageId,
             @RequestParam(defaultValue = "20") int size){
+
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatMessages(chatRoomIdx,user.getIdx(),lastMessageId,size)));
     }
 
@@ -170,7 +174,8 @@ public class ChatController {
             @AuthenticationPrincipal User user,
             @PathVariable Long roomIdx
     ) {
-        chatRoomService.join(user, roomIdx);
+        mongoChatRoomService.join(user,roomIdx);
+//        chatRoomService.join(user, roomIdx);
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, "채팅방에 성공적으로 참여!"));
     }
 

@@ -1,5 +1,6 @@
-package com.hot6.backend.mongo;
+package com.hot6.backend.mongo.message.repository;
 
+import com.hot6.backend.mongo.message.model.MongoChatMessageDocument;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;

@@ -1,4 +1,6 @@
-package com.hot6.backend.mongo;
+package com.hot6.backend.mongo.message.repository;
+
+import com.hot6.backend.mongo.message.model.MongoChatMessageDocument;
 
 import java.util.List;
 

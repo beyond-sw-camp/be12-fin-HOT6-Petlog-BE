@@ -2,8 +2,8 @@ package com.hot6.backend.chat;
 
 import com.hot6.backend.chat.model.ChatDto;
 import com.hot6.backend.chat.service.ChatRoomService;
+import com.hot6.backend.mongo.room.MongoChatRoomService;
 import com.hot6.backend.user.model.User;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -11,8 +11,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -23,6 +21,7 @@ import java.security.Principal;
 public class ChatWebSocketController {
     private final SimpMessagingTemplate simp;
     private final ChatRoomService chatRoomService;
+    private final MongoChatRoomService mongoChatRoomService;
 
     @MessageMapping("/chat/{roomIdx}")
     public void sendMessage(@DestinationVariable Long roomIdx,
@@ -35,6 +34,7 @@ public class ChatWebSocketController {
         log.info("👤 sender: {} (user idx: {})", user.getNickname(), user.getIdx());
         log.info("✉️ payload: {}", dto);
 
-        simp.convertAndSend("/topic/chat/" + roomIdx, chatRoomService.saveSendMessage(roomIdx, user.getIdx(), dto));
+//        simp.convertAndSend("/topic/chat/" + roomIdx, chatRoomService.saveSendMessage(roomIdx, user.getIdx(), dto));
+        simp.convertAndSend("/topic/chat/" + roomIdx, mongoChatRoomService.saveSendMessage(roomIdx, user.getIdx(), dto));
     }
 }

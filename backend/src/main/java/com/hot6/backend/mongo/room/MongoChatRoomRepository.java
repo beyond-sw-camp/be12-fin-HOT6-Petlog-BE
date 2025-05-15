@@ -1,6 +1,5 @@
-package com.hot6.backend.mongo;
+package com.hot6.backend.mongo.room;
 
-import com.hot6.backend.chat.model.ChatRoom;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
