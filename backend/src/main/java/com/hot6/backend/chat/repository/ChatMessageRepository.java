@@ -29,8 +29,6 @@ public interface ChatMessageRepository extends JpaRepository<Chat,Long> {
             Long lastMessageId,
             Pageable pageable
     );
-
-
     @Query(value = """
     SELECT c.* 
     FROM chat c

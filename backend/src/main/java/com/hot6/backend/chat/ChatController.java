@@ -17,6 +17,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -35,6 +37,12 @@ public class ChatController {
         log.info("user info {}", user.getIdx());
 //        chatRoomService.createChatRoom(request, user.getIdx());
         mongoChatRoomService.createChatRoom(request, user.getIdx());
+        // startDateTime을 LocalDateTime으로 파싱
+//         LocalDateTime startDateTime = null;
+//         if (request.getStartDateTime() != null) {
+//             startDateTime = LocalDateTime.parse(request.getStartDateTime());
+//         }
+//         chatRoomService.createChatRoom(request, user.getIdx(), startDateTime);
         return ResponseEntity.ok("채팅방 생성 완료");
     }
 
@@ -126,7 +134,6 @@ public class ChatController {
             @PathVariable Long chatRoomIdx,
             @RequestParam(required = false) Long lastMessageId,
             @RequestParam(defaultValue = "20") int size){
-
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS,chatRoomService.getChatMessages(chatRoomIdx,user.getIdx(),lastMessageId,size)));
     }
 

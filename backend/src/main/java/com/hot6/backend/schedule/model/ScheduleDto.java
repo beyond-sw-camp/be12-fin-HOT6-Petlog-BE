@@ -82,8 +82,12 @@ public class ScheduleDto {
         @Schema(description = "반복 종료 날짜", example = "2025-04-24")
         private LocalDate repeatEndAt;
 
-        @Schema(description = "장소", example = "병원")
+        @Schema(description = "장소 이름", example = "서울 동물병원")
+        private String placeName;
+
+        @Schema(description = "장소 id", example = "1234")
         private String placeId;
+
 
         @Schema(description = "일정 시작 시간", example = "2025-04-10T10:00:00")
         private LocalDateTime startAt;
@@ -111,6 +115,7 @@ public class ScheduleDto {
                     .repeatCycle(schedule.getRepeatCycle())
                     .repeatEndAt(schedule.getRepeatEndAt())
                     .placeId(schedule.getPlaceId())
+                    .placeName(schedule.getPlaceName())
                     .startAt(schedule.getStartAt())
                     .endAt(schedule.getEndAt())
                     .color(category.getColor())
@@ -127,7 +132,10 @@ public class ScheduleDto {
         @Schema(description = "일정 제목", example = "예방접종")
         private String title;
 
-        @Schema(description = "장소", example = "병원")
+        @Schema(description = "장소 이름", example = "서울 동물병원")
+        private String placeName;
+
+        @Schema(description = "장소 id", example = "1234")
         private String placeId;
 
         @Schema(description = "메모", example = "병원에서 예방접종")
@@ -163,6 +171,7 @@ public class ScheduleDto {
                     .endAt(endAt)
                     .recurring(recurring)
                     .repeatCycle(repeatCycle)
+                    .placeName(placeName)
                     .placeId(placeId)
                     .repeatCount(repeatCount)
                     .repeatEndAt(repeatEndAt)
@@ -177,8 +186,11 @@ public class ScheduleDto {
         @Schema(description = "일정 제목", example = "예방접종")
         private String title;
 
-        @Schema(description = "장소", example = "병원")
+        @Schema(description = "장소 이름", example = "서울 동물병원")
         private String placeName;
+
+        @Schema(description = "장소 id", example = "1234")
+        private String placeId;
 
         @Schema(description = "메모", example = "병원에서 예방접종")
         private String memo;

@@ -52,4 +52,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     Optional<Schedule> findScheduleByPet_Idx(Long petIdx);
 
+    Optional<Schedule> findByPet_IdxAndIdx(Long petIdx, Long scheduleIdx);
+
 }

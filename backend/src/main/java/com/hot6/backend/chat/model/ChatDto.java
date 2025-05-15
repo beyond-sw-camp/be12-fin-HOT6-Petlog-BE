@@ -27,6 +27,12 @@ public class ChatDto {
 
         @Schema(description = "채팅방 해시태그 목록", example = "[\"#햄스터\", \"#김포\", \"#친구\"]")
         private List<String> hashtags;
+
+        @Schema(description = "채팅방 시작 시간", example = "2025-05-13T13:21:00")
+        private String startDateTime;
+
+        @Schema(description = "채팅방 최대 참여 인원", example = "50")
+        private Integer maxParticipants; // 최대 인원 추가
     }
 
     @Getter
@@ -55,14 +61,21 @@ public class ChatDto {
         @Schema(description = "채팅방 참여 인원수", example = "6")
         public int participants;
 
+        public int maxParticipants;
+
         @Schema(description = "참여 여부", example = "true")
         public Boolean isParticipating;
+
+
+        public LocalDateTime startDateTime;
 
         public static ChatRoomListDto from(ChatRoom chatRoom, Long userIdx) {
             return ChatRoomListDto.builder()
                     .idx(chatRoom.getIdx())
                     .title(chatRoom.getCTitle())
-                    .participants(chatRoom.getParticipants().size())
+                    .startDateTime(chatRoom.getStartDateTime())
+                    .maxParticipants(chatRoom.getMaxParticipants())
+                    .participants(chatRoom.getCurrentParticipants())
                     .hashtags(chatRoom.getHashtags().stream().map(ChatRoomHashtag::getCTag).collect(Collectors.toList()))
                     .isParticipating(
                             userIdx != null && chatRoom.getParticipants().stream()
@@ -94,7 +107,7 @@ public class ChatDto {
             return MyChatRoomListDto.builder()
                     .idx(chatRoom.getIdx())
                     .title(chatRoom.getCTitle())
-                    .participants(chatRoom.getParticipants().size())
+                    .participants(chatRoom.getCurrentParticipants())
                     .hashtags(chatRoom.getHashtags().stream().map(ChatRoomHashtag::getCTag).collect(Collectors.toList()))
                     .isParticipating(true)
                     .build();
@@ -124,7 +137,7 @@ public class ChatDto {
             return ChatRoomDetailInfo.builder()
                     .idx(chatRoom.getIdx())
                     .title(chatRoom.getCTitle())
-                    .participants(chatRoom.getParticipants().size())
+                    .participants(chatRoom.getCurrentParticipants())
                     .hashtags(chatRoom.getHashtags().stream().map(ChatRoomHashtag::getCTag).collect(Collectors.toList()))
                     .isAdmin(
                             chatRoom.getParticipants().stream()
@@ -213,6 +226,7 @@ public class ChatDto {
         public String createdAt;
     }
 
+    @Setter
     @Getter
     @Builder
     @ToString
@@ -220,6 +234,8 @@ public class ChatDto {
     @AllArgsConstructor
     public static class ChatMessageDto {
         private Long chatroomId;
+        private Long senderIdx;      // ✅ 사용자 식별을 위해 추가
+        private String sender;       // ✅ 사용자 닉네임
         private ChatContent content;        // 본문 내용 or Base64 or URL
         private String timestamp;   // ISO String (정렬용, 표시용)
     }

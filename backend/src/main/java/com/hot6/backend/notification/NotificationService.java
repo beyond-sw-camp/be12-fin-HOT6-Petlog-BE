@@ -8,6 +8,8 @@ import com.hot6.backend.pet.PetRepository;
 import com.hot6.backend.pet.model.Pet;
 import com.hot6.backend.schedule.ScheduleRepository;
 import com.hot6.backend.schedule.model.Schedule;
+import com.hot6.backend.user.UserRepository;
+import com.hot6.backend.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class NotificationService {
     private final ScheduleRepository scheduleRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final PetRepository petRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = false)
     public void createNotification(NotificationDto.NotificationSendRequest request, Long userIdx) {
@@ -34,24 +37,33 @@ public class NotificationService {
         Schedule schedule = scheduleRepository.findById(request.getScheduleId())
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOTIFICATION_NOT_FOUND));
 
-        // 2. DTO → 엔티티로 변환
+        // 2. 사용자 조회 (receiver 설정 위해)
+        User receiver = userRepository.findById(userIdx)
+                .orElseThrow(() -> new BaseException(BaseResponseStatus.USER_NOT_FOUND));
+
+        // 3. 알림 생성 + 수신자 지정 (방법 1)
         Notification notification = NotificationDto.NotificationElement.builder()
                 .message(request.getMessage())
                 .sentAt(LocalDateTime.now())
                 .build()
-                .toEntity(schedule);
+                .toEntity(schedule, receiver); // ✅ 한 줄로 수신자 포함 생성
 
-        // 3. 저장
+        // 4. 저장
         notificationRepository.save(notification);
 
-        // 4. 웹소켓 전송
+        // 5. 웹소켓 전송
         NotificationDto.NotificationElement element = NotificationDto.NotificationElement.builder()
+                .idx(notification.getIdx())
                 .message(notification.getMessage())
                 .sentAt(notification.getSentAt())
+                .petName(schedule.getPet().getName())
+                .scheduleId(schedule.getIdx())
+                .isRead(notification.isRead())
                 .build();
 
         messagingTemplate.convertAndSend("/topic/alerts/" + userIdx, element);
     }
+
     @Transactional(readOnly = true)
     public List<NotificationDto.NotificationElement> getNotificationsByUserId(Long userIdx) {
         List<NotificationDto.NotificationElement> list = new ArrayList<>();
@@ -69,7 +81,7 @@ public class NotificationService {
         return list;
     }
 
-    @Transactional
+    @Transactional(readOnly = false)
     public void markAsRead(Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.NOTIFICATION_NOT_FOUND));
@@ -84,5 +96,9 @@ public class NotificationService {
             throw new BaseException(BaseResponseStatus.NOTIFICATION_NOT_FOUND);
         }
         notificationRepository.deleteById(idx);
+    }
+    @Transactional(readOnly = false)
+    public int countUnreadByReceiverId(Long userId) {
+        return notificationRepository.countByReceiver_IdxAndIsReadFalse(userId);
     }
 }

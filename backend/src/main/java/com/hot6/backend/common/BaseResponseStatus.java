@@ -68,7 +68,10 @@ public enum BaseResponseStatus {
     SCHEDULE_CREATE_FAILED(false, 3100, "일정 등록에 실패했습니다."),
     //-- 3200 : 일정 수정
     SCHEDULE_UPDATE_FAILED(false, 3200, "일정 수정에 실패했습니다."),
-    SHARED_SCHEDULE_NOT_FOUND(false,3201,"공유된 반려동물 일정을 찾을 수 없습니다."),
+    //-- 3300 : 반려동물 일정 조회
+    SHARED_SCHEDULE_NOT_FOUND(false,3300,"공유된 반려동물 일정을 찾을 수 없습니다."),
+    //-- 3400 : 일정 반복
+    SCHEDULE_INVALID_REPEAT_CYCLE(false, 3400, "반복 주기 값이 잘못되었습니다. (일, 주, 월만 가능) "),
 
     /* 4000~ 4999 : 기록 관련 에러 */
     //-- 4000 : 기록 조회

@@ -23,6 +23,11 @@ spec:
       containers:
         - name: backend-api-green
           image: petlog/backend:latest
+          resources:
+            requests:
+              ephemeral-storage: "100Mi"
+            limits:
+              ephemeral-storage: "500Mi"
           ports:
             - containerPort: 8080
           volumeMounts:

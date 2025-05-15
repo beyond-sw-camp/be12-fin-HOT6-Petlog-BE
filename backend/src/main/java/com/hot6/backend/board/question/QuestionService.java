@@ -7,6 +7,7 @@ import com.hot6.backend.board.hashtagQuestion.Hashtag_QuestionService;
 import com.hot6.backend.board.question.images.QuestionImageService;
 import com.hot6.backend.board.question.model.Question;
 import com.hot6.backend.board.question.model.QuestionDto;
+import com.hot6.backend.board.question.model.QuestionListResponse;
 import com.hot6.backend.common.exception.BaseException;
 import com.hot6.backend.common.BaseResponseStatus;
 import com.hot6.backend.pet.PetRepository;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -73,32 +75,73 @@ public class QuestionService {
         }
     }
 
-    public Page<QuestionDto.QuestionResponse> list(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        try {
-            return questionRepository.findAll(pageable)
-                    .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())));
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.QUESTION_NOT_FOUND);
+    public QuestionListResponse list(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Question> questions = questionRepository.findAllWithHashtags(pageable);
+        long totalCount = questionRepository.countAll();
+
+        List<QuestionDto.QuestionResponse> content = questions.stream()
+                .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())))
+                .toList();
+
+        int currentPage = page + 1;
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        int pageGroupStart = ((currentPage - 1) / 10) * 10 + 1;
+        int pageGroupEnd = Math.min(pageGroupStart + 9, totalPages);
+
+        List<Integer> visiblePages = new ArrayList<>();
+        for (int i = pageGroupStart; i <= pageGroupEnd; i++) {
+            visiblePages.add(i);
         }
+
+        return QuestionListResponse.builder()
+                .content(content)
+                .currentPage(currentPage)
+                .totalPages(totalPages)
+                .pageGroupStart(pageGroupStart)
+                .pageGroupEnd(pageGroupEnd)
+                .visiblePages(visiblePages)
+                .build();
     }
 
-    public Page<QuestionDto.QuestionResponse> search(String keyword, int page, int size) {
+    public QuestionListResponse search(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        try {
-            return questionRepository
-                    .findByqTitleContainingIgnoreCaseOrUserNicknameContainingIgnoreCaseOrContentContainingIgnoreCaseOrHashtagsListTagContainingIgnoreCase(
-                            keyword, keyword, keyword, keyword, pageable)
-                    .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())));
-        } catch (Exception e) {
-            throw new BaseException(BaseResponseStatus.QUESTION_SEARCH_FAILED);
+        List<Question> questions = questionRepository.searchWithHashtags(keyword, pageable);
+        long totalCount = questionRepository.countByKeyword(keyword);
+
+        List<QuestionDto.QuestionResponse> content = questions.stream()
+                .map(q -> QuestionDto.QuestionResponse.from(q, answerService.countByQuestionIdx(q.getIdx())))
+                .toList();
+
+        int currentPage = page + 1;
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        int pageGroupSize = 10;
+        int pageGroupStart = ((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
+        int pageGroupEnd = Math.min(pageGroupStart + pageGroupSize - 1, totalPages);
+
+        List<Integer> visiblePages = new ArrayList<>();
+        for (int i = pageGroupStart; i <= pageGroupEnd; i++) {
+            visiblePages.add(i);
         }
+
+        return QuestionListResponse.builder()
+                .content(content)
+                .currentPage(currentPage)
+                .totalPages(totalPages)
+                .pageGroupStart(pageGroupStart)
+                .pageGroupEnd(pageGroupEnd)
+                .visiblePages(visiblePages)
+                .build();
     }
 
     public QuestionDto.QuestionResponse read(Long idx) {
-        Question question = questionRepository.findById(idx)
+        Question question = questionRepository.findWithAssociationsById(idx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.QUESTION_NOT_FOUND));
-        return QuestionDto.QuestionResponse.from(question, answerService.countByQuestionIdx(question.getIdx()));
+
+        return QuestionDto.QuestionResponse.from(
+                question,
+                answerService.countByQuestionIdx(question.getIdx())
+        );
     }
 
     @Transactional(readOnly = false)
@@ -166,6 +209,5 @@ public class QuestionService {
                 .map(q -> QuestionDto.UserQuestionResponse.from(q, answerRepository.countByQuestion(q)))
                 .toList();
     }
-
 }
 
