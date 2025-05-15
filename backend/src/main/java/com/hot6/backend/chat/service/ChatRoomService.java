@@ -3,10 +3,12 @@ package com.hot6.backend.chat.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hot6.backend.chat.model.*;
-import com.hot6.backend.chat.repository.ChatRoomParticipantRepository;
 import com.hot6.backend.chat.repository.ChatRoomRepository;
 import com.hot6.backend.common.BaseResponseStatus;
 import com.hot6.backend.common.exception.BaseException;
+import com.hot6.backend.mongo.room.MongoChatRoomDocument;
+import com.hot6.backend.mongo.room.MongoChatRoomRepository;
+import com.hot6.backend.mongo.room.MongoChatRoomService;
 import com.hot6.backend.pet.PetService;
 import com.hot6.backend.pet.SharedSchedulePetService;
 import com.hot6.backend.pet.model.Pet;
@@ -22,11 +24,8 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 @Service
 @Transactional(readOnly = true)
@@ -41,6 +40,8 @@ public class ChatRoomService {
     private final ScheduleService scheduleService;
     private final PetService petService;
     private final SharedSchedulePetService sharedSchedulePetService;
+    private final MongoChatRoomService mongoChatRoomService;
+    private final MongoChatRoomRepository mongoChatRoomRepository;
 
     @Transactional(readOnly = true)
     public Slice<ChatDto.ChatRoomListDto> getList(Long userIdx, Pageable pageable) {
@@ -104,8 +105,10 @@ public class ChatRoomService {
 
     @Transactional(readOnly = true)
     public Slice<ChatDto.ChatElement> getChatMessages(Long chatRoomIdx, Long userIdx, Long lastMessageId,int size) {
-        ChatRoomParticipant chatRoomParticipant = chatRoomParticipantService.findChatRoomParticipantOrThrow(chatRoomIdx, userIdx);
-        return chatMessageService.findChatMessages(chatRoomParticipant,lastMessageId,size);
+        MongoChatRoomDocument chatRoom = mongoChatRoomRepository.findByIdx(chatRoomIdx).orElseThrow(() -> new BaseException(BaseResponseStatus.CHAT_ROOM_NOT_FOUND));
+//        ChatRoomParticipant chatRoomParticipant = chatRoomParticipantService.findChatRoomParticipantOrThrow(chatRoomIdx, userIdx);
+//        return chatMessageService.findChatMessages(chatRoomParticipant,lastMessageId,size);
+        return mongoChatRoomService.findChatMessages(chatRoom,userIdx,lastMessageId,size);
     }
 
     @Transactional(readOnly = true)

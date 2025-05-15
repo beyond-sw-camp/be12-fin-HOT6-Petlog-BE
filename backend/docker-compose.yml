@@ -68,7 +68,7 @@ services:
     image: mariadb:11
     container_name: mariadb
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: qwer1234
       MARIADB_DATABASE: petlog
@@ -76,7 +76,7 @@ services:
     volumes:
       - ./data/mariadb:/var/lib/mysql
   mongo:
-    image: mongo:6.0
+    image: mongo:latest
     container_name: mongo
     ports:
       - "27017:27017"
