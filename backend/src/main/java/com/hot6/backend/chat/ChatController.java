@@ -2,6 +2,7 @@ package com.hot6.backend.chat;
 
 import com.hot6.backend.chat.model.ChatDto;
 import com.hot6.backend.chat.service.ChatRoomParticipantService;
+import com.hot6.backend.chat.service.ChatRoomRedisService;
 import com.hot6.backend.chat.service.ChatRoomService;
 import com.hot6.backend.common.BaseResponse;
 import com.hot6.backend.common.BaseResponseStatus;
@@ -30,6 +31,7 @@ public class ChatController {
     private final ChatRoomService chatRoomService;
     private final MongoChatRoomService mongoChatRoomService;
     private final ChatRoomParticipantService chatRoomParticipantService;
+    private final ChatRoomRedisService chatRoomRedisService;
 
     @Operation(summary = "그룹 채팅방 생성", description = "채팅방 제목과 해시태그를 포함하여 새로운 채팅방을 생성합니다.")
     @PostMapping
@@ -181,8 +183,10 @@ public class ChatController {
             @AuthenticationPrincipal User user,
             @PathVariable Long roomIdx
     ) {
+
+        chatRoomRedisService.requestJoin(user, roomIdx);
         mongoChatRoomService.join(user,roomIdx);
-//        chatRoomService.join(user, roomIdx);
+
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, "채팅방에 성공적으로 참여!"));
     }
 

@@ -3,7 +3,6 @@ package com.hot6.backend.config.filter;
 
 import com.hot6.backend.user.model.User;
 import com.hot6.backend.utils.JwtUtil;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -12,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.hot6.backend.redis.RefreshTokenRepository;
 
 import java.io.IOException;
 
@@ -64,6 +64,6 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/login") || path.startsWith("/app/users/signup");
+        return path.startsWith("/login") || path.startsWith("/user/signup") || path.startsWith("/user/token/refresh");
     }
 }

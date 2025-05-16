@@ -3,6 +3,7 @@ package com.hot6.backend.config;
 
 import com.hot6.backend.config.filter.JwtFilter;
 import com.hot6.backend.config.filter.LoginFilter;
+import com.hot6.backend.redis.RefreshTokenRepository;
 import com.hot6.backend.user.CustomOAuth2UserService;
 import com.hot6.backend.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final AuthenticationConfiguration configuration;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final RefreshTokenRepository refreshTokenRepository;
 
 
     @Bean
@@ -52,6 +54,7 @@ public class SecurityConfig {
                         "/user/verify-email",
                         "/user/auth/check",
                         "/user/email/check",
+                        "/user/token/refresh",
                         "/oauth2/authorization/kakao",
                         "/user/login/error/**",
                         "/login/oauth2/**",
@@ -86,7 +89,9 @@ public class SecurityConfig {
         // 기존에 사용자한테 설정하도록 한 쿠키(JSESSIONID)를 사용하지 않도록 하는 설정
         http.sessionManagement(AbstractHttpConfigurer::disable);
 
-        http.addFilterAt(new LoginFilter(configuration.getAuthenticationManager(), customAuthFailureHandler), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(
+                new LoginFilter(configuration.getAuthenticationManager(), customAuthFailureHandler, refreshTokenRepository),
+                UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -19,6 +19,7 @@ public enum BaseResponseStatus {
     LOGIN_FAILED(false, 1100, "로그인에 실패했습니다."),
     INVALID_CREDENTIALS(false, 1101, "아이디 또는 비밀번호가 올바르지 않습니다."),
     EMAIL_VERIFY_FAIL(false, 1102, "이메일 인증이 완료되지 않았습니다."),
+    INVALID_JWT(false, 1103, "유효하지 않은 JWT 토큰입니다."),
     //-- 1200 : 계정 정보 수정
     ACCOUNT_UPDATE_FAILED(false, 1200, "계정 정보 수정에 실패했습니다."),
     INVALID_USER_INFO(false, 1201, "잘못된 사용자 정보입니다."),
@@ -37,6 +38,7 @@ public enum BaseResponseStatus {
     CHAT_ROOM_LEAVE_FAILED(false, 2005, "채팅방 나가기에 실패했습니다."),
     MAX_PARTICIPANT_LIMIT(false,2006,"채팅방 참여 인원이 모두 찼습니다."),
     CHAT_ROOM_FIRST_JOIN_ID_NULL(false,2007,"채팅방 참여 시 메시지를 가져올 때, 메시지 메타정보가 null 입니다."),
+    LOCK_ACQUIRE_FAILED(false, 2008, "다른 요청 처리 중입니다. 잠시 후 다시 시도해주세요."),
 
     //-- 2100 : 채팅방 생성/수정 관련
     CHAT_ROOM_CREATION_FAILED(false, 2100, "채팅방 생성에 실패했습니다."),
@@ -45,6 +47,10 @@ public enum BaseResponseStatus {
     CHAT_ROOM_DELETE_FAILED(false, 2102, "채팅방 삭제에 실패했습니다."),
     CHAT_ROOM_HASHTAG_FORMAT_INVALID(false, 2103, "해시태그 형식이 잘못되었습니다."),
     CHAT_ROOM_UPDATE_NO_PERMISSION(false, 2104, "채팅방 수정 권한이 없습니다."),
+    CHAT_ROOM_NOT_YET_ALLOWED(false, 2105, "아직 입장이 허용되지 않은 사용자입니다."),
+    CHAT_ROOM_NOT_YOUR_TURN(false, 2106, "당신의 입장 차례가 아닙니다."),
+    CHAT_ROOM_FULL(false, 2107, "채팅방 정원이 초과되었습니다."),
+
 
     //-- 2200 : 채팅 메시지 관련
     CHAT_MESSAGE_SEND_FAILED(false, 2200, "채팅 메시지 전송에 실패했습니다."),
