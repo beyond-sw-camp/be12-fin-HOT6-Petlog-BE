@@ -215,9 +215,11 @@ public class ScheduleService {
 
     @Transactional
     public void deletePetSchedule(Long petIdx, Long scheduleIdx) {
-        Schedule schedule = scheduleRepository.findScheduleByPet_Idx(petIdx)
+        // petIdx와 scheduleIdx를 모두 사용하여 스케줄을 조회합니다.
+        Schedule scheduleToDelete = scheduleRepository.findByPet_IdxAndIdx(petIdx, scheduleIdx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.SCHEDULE_NOT_FOUND));
 
-        scheduleRepository.delete(schedule);
+        // 찾은 스케줄을 삭제합니다.
+        scheduleRepository.delete(scheduleToDelete);
     }
 }

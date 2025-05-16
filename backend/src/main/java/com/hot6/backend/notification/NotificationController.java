@@ -49,5 +49,11 @@ public class NotificationController {
         notificationService.deleteById(notificationIdx);
         return ResponseEntity.noContent().build();
     }
+    @Operation(summary = "읽지 않은 알림 개수 조회", description = "로그인한 사용자의 안 읽은 알림 개수만 반환합니다.")
+    @GetMapping("/user/unreadCount")
+    public ResponseEntity<Integer> getUnreadNotificationCount(@AuthenticationPrincipal User user) {
+        int count = notificationService.countUnreadByReceiverId(user.getIdx());
+        return ResponseEntity.ok(count);
+    }
 }
 

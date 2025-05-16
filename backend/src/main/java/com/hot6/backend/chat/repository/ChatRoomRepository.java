@@ -1,10 +1,14 @@
 package com.hot6.backend.chat.repository;
 
 import com.hot6.backend.chat.model.ChatRoom;
+import com.hot6.backend.chat.model.ChatRoomType;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,10 +16,11 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatRoomRepositoryCustom  {
     @Query("""
-    SELECT cr FROM ChatRoom cr
-    LEFT JOIN FETCH cr.participants p
-    LEFT JOIN FETCH p.user
-    LEFT JOIN FETCH cr.hashtags
+SELECT cr FROM ChatRoom cr
+LEFT JOIN FETCH cr.participants p
+LEFT JOIN FETCH p.user u
+LEFT JOIN FETCH u.emailVerify
+LEFT JOIN FETCH cr.hashtags
 """)
     List<ChatRoom> findAllWithParticipantsAndHashtags();
 
@@ -47,4 +52,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long>, ChatR
     Slice<ChatRoom> findChatRoomsWithDetailsByIds(List<Long> roomIds, Pageable pageable);
     List<ChatRoom> findByTagsWithParticipants(List<String> tagList);
     List<ChatRoom> findByTitleWithParticipantsAndTags(String keyword);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from ChatRoom c where c.idx = :idx")
+    Optional<ChatRoom> findByIdxForUpdate(Long idx);
+    List<ChatRoom> findByType(ChatRoomType type);
 }

@@ -89,7 +89,7 @@ public class PostService {
     }
 
     public PostDto.PostResponse read(Long idx) {
-        Post post = postRepository.findById(idx)
+        Post post = postRepository.findWithImagesById(idx)
                 .orElseThrow(() -> new BaseException(BaseResponseStatus.POST_NOT_FOUND));
         return PostDto.PostResponse.from(post);
     }
