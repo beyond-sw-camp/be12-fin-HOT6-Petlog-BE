@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Repository
@@ -38,4 +39,15 @@ public class ChatRoomJoinRedisRepository {
     public void expire(String key, long timeout, TimeUnit unit) {
         redisTemplate.expire(key, timeout, unit);
     }
+
+    // 큐에 사용자 입장 요청 추가
+    public void enqueueJoinRequest(String key, String userId) {
+        redisTemplate.opsForList().rightPush(key, userId);
+    }
+
+    // 큐에서 사용자 요청 하나 꺼내기 (선착순 입장)
+    public String dequeueJoinRequest(String key) {
+        return redisTemplate.opsForList().leftPop(key);
+    }
+
 }

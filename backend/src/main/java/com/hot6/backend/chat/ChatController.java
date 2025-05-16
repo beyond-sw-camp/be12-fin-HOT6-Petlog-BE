@@ -173,7 +173,7 @@ public class ChatController {
             @PathVariable Long roomIdx
     ) {
         //chatRoomService.join(user, roomIdx);
-        chatRoomRedisService.join(user, roomIdx);
+        chatRoomRedisService.requestJoin(user, roomIdx);
         return ResponseEntity.ok(new BaseResponse(BaseResponseStatus.SUCCESS, "채팅방에 성공적으로 참여!"));
     }
 

@@ -47,6 +47,10 @@ public enum BaseResponseStatus {
     CHAT_ROOM_DELETE_FAILED(false, 2102, "채팅방 삭제에 실패했습니다."),
     CHAT_ROOM_HASHTAG_FORMAT_INVALID(false, 2103, "해시태그 형식이 잘못되었습니다."),
     CHAT_ROOM_UPDATE_NO_PERMISSION(false, 2104, "채팅방 수정 권한이 없습니다."),
+    CHAT_ROOM_NOT_YET_ALLOWED(false, 2105, "아직 입장이 허용되지 않은 사용자입니다."),
+    CHAT_ROOM_NOT_YOUR_TURN(false, 2106, "당신의 입장 차례가 아닙니다."),
+    CHAT_ROOM_FULL(false, 2107, "채팅방 정원이 초과되었습니다."),
+
 
     //-- 2200 : 채팅 메시지 관련
     CHAT_MESSAGE_SEND_FAILED(false, 2200, "채팅 메시지 전송에 실패했습니다."),
